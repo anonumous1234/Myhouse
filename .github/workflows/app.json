@@ -1,0 +1,50 @@
+// Define global variables
+let designs = [];
+let currentDesignIndex = 0;
+
+// Fetch house designs from JSON file
+fetch('house-designs.json')
+  .then(response => response.json())
+  .then(data => {
+    designs = data;
+    displayDesign(currentDesignIndex);
+  })
+  .catch(error => console.error(error));
+
+// Function to display the current design
+function displayDesign(index) {
+  // Get the design object from the designs array
+  const design = designs[index];
+
+  // Update the title and description
+  const titleElement = document.getElementById('title');
+  const descriptionElement = document.getElementById('description');
+  titleElement.textContent = design.title;
+  descriptionElement.textContent = design.description;
+
+  // Update the image
+  const imageElement = document.getElementById('image');
+  imageElement.src = design.image;
+
+  // Update the room list
+  const roomListElement = document.getElementById('room-list');
+  roomListElement.innerHTML = '';
+  design.rooms.forEach(room => {
+    const roomElement = document.createElement('li');
+    roomElement.textContent = room;
+    roomListElement.appendChild(roomElement);
+  });
+}
+
+// Event listeners for the next and previous buttons
+const nextButton = document.getElementById('next-button');
+nextButton.addEventListener('click', () => {
+  currentDesignIndex = (currentDesignIndex + 1) % designs.length;
+  displayDesign(currentDesignIndex);
+});
+
+const previousButton = document.getElementById('previous-button');
+previousButton.addEventListener('click', () => {
+  currentDesignIndex = (currentDesignIndex - 1 + designs.length) % designs.length;
+  displayDesign(currentDesignIndex);
+});
