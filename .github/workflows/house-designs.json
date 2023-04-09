@@ -1,0 +1,91 @@
+const canvas = document.getElementById('canvas');
+const items = document.querySelectorAll('.item');
+
+let draggedItem = null;
+
+// Drag and drop functionality
+for (let i = 0; i < items.length; i++) {
+  const item = items[i];
+
+  item.addEventListener('dragstart', function () {
+    draggedItem = item;
+    setTimeout(function () {
+      item.style.display = 'none';
+    }, 0);
+  });
+
+  item.addEventListener('dragend', function () {
+    setTimeout(function () {
+      draggedItem.style.display = 'block';
+      draggedItem = null;
+    }, 0);
+  });
+}
+
+canvas.addEventListener('dragover', function (e) {
+  e.preventDefault();
+});
+
+canvas.addEventListener('dragenter', function (e) {
+  e.preventDefault();
+  this.style.border = '2px solid #61dafb';
+});
+
+canvas.addEventListener('dragleave', function () {
+  this.style.border = '2px solid #333';
+});
+
+canvas.addEventListener('drop', function () {
+  this.style.border = '2px solid #333';
+  if (draggedItem) {
+    const newItem = draggedItem.cloneNode(true);
+    newItem.removeAttribute('draggable');
+    this.appendChild(newItem);
+    designHouse();
+  }
+});
+
+// Midjourney AI functionality
+function designHouse() {
+  const items = canvas.querySelectorAll('img');
+  const itemNames = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const itemName = items[i].getAttribute('alt');
+    itemNames.push(itemName);
+  }
+
+  fetch('https://api.midjourney.com/api/v1/interact', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer <YOUR_API_KEY>'
+    },
+    body: JSON.stringify({
+      "model_id": "<YOUR_MODEL_ID>",
+      "input": {
+        "items": itemNames
+      }
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+    const houseDesigns = data.result;
+    saveDesigns(houseDesigns);
+  })
+  .catch((error) => {
+    console.error('Error:', error);
+  });
+}
+
+// Save house designs to file
+function saveDesigns(houseDesigns) {
+  const data = JSON.stringify(houseDesigns);
+  const filename = 'house-designs.json';
+  const file = new Blob([data], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file);
+  a.download = filename;
+  a.click();
+}
